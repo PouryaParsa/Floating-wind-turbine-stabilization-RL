@@ -1,11 +1,10 @@
-import gym
-import gym_turbine
 import os
 import argparse
-import utils
-from stable_baselines3 import PPO
 import matplotlib.pyplot as plt
 import numpy as np
+import gym
+from stable_baselines3 import PPO
+import utils
 
 def save_simulation_data(sim_df, directory, base_filename):
     i = 0
@@ -46,7 +45,7 @@ def plot_simulation_data(sim_df):
 
     plt.show()
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser_group = parser.add_mutually_exclusive_group()
     parser_group.add_argument('--agent', help='Path to agent .zip file.')
@@ -56,20 +55,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     env = gym.make("TurbineStab-v0")
-    
+
     if args.lqr:
         sim_df = utils.simulate_episode(env=env, agent=None, max_time=args.time, lqr=True)
         save_simulation_data(sim_df, "logs/LQR_simulations", "_simdata_lqr")
     else:
-        agent_path = args.agent
-        agent = PPO.load(agent_path)
+        agent = PPO.load(args.agent)
         sim_df = utils.simulate_episode(env=env, agent=agent, max_time=args.time, lqr=False)
-        agent_path_list = agent_path.split("\\")
+        agent_path_list = args.agent.split(os.path.sep)
         simdata_dir = os.path.join("logs", agent_path_list[-3], "sim_data")
         os.makedirs(simdata_dir, exist_ok=True)
-        save_simulation_data(sim_df, simdata_dir, f"{agent_path_list[-1][0:-4]}_simdata")
+        save_simulation_data(sim_df, simdata_dir, f"_simdata_{agent_path_list[-1][0:-4]}")
 
     env.close()
 
     if args.plot:
         plot_simulation_data(sim_df)
+
+if __name__ == "__main__":
+    main()
