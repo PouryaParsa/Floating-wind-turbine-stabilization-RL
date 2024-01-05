@@ -15,7 +15,7 @@ def simulate_episode(env, agent, max_time, lqr=False):
 
     done = False
     env.reset()
-    
+
     while not done and env.t_step < max_time / env.step_size:
         if lqr:
             action = (-K.dot(env.turbine.state)) / ss.max_input
